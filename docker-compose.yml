@@ -60,9 +60,10 @@ services:
             TZ: Europe/Oslo
 
     backend:
-        build:
-            context: ../tiltakspenger-vedtak
-            dockerfile: Dockerfile
+        image: ghcr.io/navikt/tiltakspenger-vedtak:latest
+        # build:
+        #     context: ../tiltakspenger-vedtak
+        #     dockerfile: Dockerfile
         depends_on:
             - postgres
             - kafka
