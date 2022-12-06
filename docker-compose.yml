@@ -60,7 +60,7 @@ services:
             TZ: Europe/Oslo
 
     backend:
-        image: ghcr.io/navikt/tiltakspenger-vedtak:latest
+        image: ghcr.io/navikt/tiltakspenger-vedtak:3416bd2fe6371280852192d086fbcb2cc33b70df
         # build:
         #     context: ../tiltakspenger-vedtak
         #     dockerfile: Dockerfile
