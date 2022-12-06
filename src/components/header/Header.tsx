@@ -22,7 +22,9 @@ const Header = ({ innloggetSaksbehandler, onSearch }: HeaderProps) => {
     return (
         <React.Fragment>
             <NavInternalHeader>
-                <NavInternalHeader.Title href="/">NAV Tiltakspenger</NavInternalHeader.Title>
+                <NavInternalHeader.Title role="link" href="/">
+                    NAV Tiltakspenger
+                </NavInternalHeader.Title>
                 <div className={styles.header__searchWrapper}>
                     <form data-theme="dark" onSubmit={searchHandler}>
                         <Search
