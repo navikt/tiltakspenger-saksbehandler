@@ -3,14 +3,14 @@ import { Tag } from '@navikt/ds-react';
 import { People } from '@navikt/ds-icons';
 import Personalia from '../../types/Personalia';
 import styles from './PersonaliaHeader.module.css';
+import HarBarnFortroligAdresse from '../har-barn-fortrolig-adresse/HarBarnFortroligAdresse';
 
 interface PersonaliaHeaderProps {
     personalia: Personalia;
 }
 
 const PersonaliaHeader = ({ personalia }: PersonaliaHeaderProps) => {
-    const { fornavn, etternavn, ident, skjermet, strengtFortrolig, fortrolig, barnFortrolig, barnStrengtFortrolig } =
-        personalia;
+    const { fornavn, etternavn, ident, skjermet, strengtFortrolig, fortrolig } = personalia;
     return (
         <div className={styles.personaliaHeader}>
             <People className={styles.personaliaHeader__personIcon} />
@@ -33,16 +33,7 @@ const PersonaliaHeader = ({ personalia }: PersonaliaHeaderProps) => {
                     Søker er skjermet
                 </Tag>
             )}
-            {barnFortrolig && (
-                <Tag variant="error" className={styles.personaliaHeader__tag}>
-                    Barn har fortrolig adresse
-                </Tag>
-            )}
-            {barnStrengtFortrolig && (
-                <Tag variant="error" className={styles.personaliaHeader__tag}>
-                    Barn har strengt fortrolig adresse
-                </Tag>
-            )}
+            <HarBarnFortroligAdresse barn={personalia.barn} />
         </div>
     );
 };

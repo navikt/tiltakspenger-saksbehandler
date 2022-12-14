@@ -5,8 +5,9 @@ interface Personalia {
     fortrolig: boolean;
     strengtFortrolig: boolean;
     skjermet: boolean;
-    barnFortrolig: boolean;
-    barnStrengtFortrolig: boolean;
+    barn: Barn[];
 }
+
+export interface Barn extends Personalia {}
 
 export default Personalia;
