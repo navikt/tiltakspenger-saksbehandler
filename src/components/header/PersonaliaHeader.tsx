@@ -22,6 +22,17 @@ const PersonaliaHeader = ({ valgtBehandling }: PersonaliaHeaderProps) => {
     });
   };
 
+  const håndterRevurderBehandling = () => {
+    fetch(
+      `/api/behandling/opprettrevurdering/${valgtBehandling.behandlingId}`,
+      {
+        method: 'POST',
+      },
+    ).then(() => {
+      // router.push('/');
+    });
+  };
+
   return (
     <div className={styles.personaliaHeader}>
       <PersonCircleIcon className={styles.personIcon} />
@@ -46,6 +57,14 @@ const PersonaliaHeader = ({ valgtBehandling }: PersonaliaHeaderProps) => {
           Søker er skjermet
         </Tag>
       )}
+      <Button
+        type="submit"
+        size="small"
+        onClick={() => håndterRevurderBehandling()}
+        className={styles.behandlingTag}
+      >
+        Revurder{' '}
+      </Button>
       <Button
         type="submit"
         size="small"
