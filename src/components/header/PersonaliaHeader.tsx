@@ -57,14 +57,16 @@ const PersonaliaHeader = ({ valgtBehandling }: PersonaliaHeaderProps) => {
           Søker er skjermet
         </Tag>
       )}
-      <Button
-        type="submit"
-        size="small"
-        onClick={() => håndterRevurderBehandling()}
-        className={styles.behandlingTag}
-      >
-        Revurder{' '}
-      </Button>
+      {valgtBehandling.tilstand === 'iverksatt' && (
+        <Button
+          type="submit"
+          size="small"
+          onClick={() => håndterRevurderBehandling()}
+          className={styles.behandlingTag}
+        >
+          Revurder{' '}
+        </Button>
+      )}
       <Button
         type="submit"
         size="small"
