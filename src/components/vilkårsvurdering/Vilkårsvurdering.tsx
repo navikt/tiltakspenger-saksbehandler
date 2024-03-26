@@ -1,4 +1,4 @@
-import {Accordion, HStack, Timeline, VStack} from '@navikt/ds-react';
+import { Accordion, Link, HStack, Timeline, VStack, BodyShort } from '@navikt/ds-react';
 import { SaksopplysningTabell } from '../saksopplysning-tabell/SaksopplysningTabell';
 import { UtfallIkon } from '../utfall-ikon/UtfallIkon';
 import { Behandling } from '../../types/Behandling';
@@ -42,7 +42,14 @@ export const Vilkårsvurdering = ({
   lesevisning,
 }: VilkårsvurderingProps) => {
   const modalRef = useRef<HTMLDialogElement>(null);
-  console.log("utfallsperioder", valgtBehandling.utfallsperioder)
+
+    const hentLovDataURLen = (lovverk: string, paragraf: string) => {
+        if (lovverk == 'Tiltakspengeforskriften') return `https://lovdata.no/dokument/SF/forskrift/2013-11-04-1286/${paragraf}`;
+        if (lovverk == 'Arbeidsmarkedsloven') return `https://lovdata.no/dokument/NL/lov/2004-12-10-76/${paragraf}`;
+        if (lovverk == 'Rundskriv om tiltakspenger' && paragraf == '§8') return `https://lovdata.no/nav/rundskriv/r76-13-02/${paragraf}#KAPITTEL_3-7`;
+        return 'https://lovdata.no/dokument/SF/forskrift/2013-11-04-1286/';
+    }
+
   return (
     <VStack gap="5" className={styles.vilkårsvurdering}>
         {valgtBehandling.utfallsperioder && valgtBehandling.utfallsperioder.length != 0 && (<Timeline>
@@ -95,6 +102,23 @@ export const Vilkårsvurdering = ({
                   </HStack>
                 </Accordion.Header>
                 <Accordion.Content>
+                    {
+                        kategori.kategoriLovreferanse.map((lov, index: number) => {
+                            return (
+                                <BodyShort key={index}>
+                                    <Link
+                                        key={index}
+                                        href={hentLovDataURLen(lov.lovverk, lov.paragraf)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ marginBottom: '0.5em'}}
+                                    >
+                                        {lov.lovverk} {lov.paragraf} {lov.beskrivelse}
+                                    </Link>
+                                </BodyShort>
+                            )
+                        })
+                    }
                   <SaksopplysningTabell
                     saksopplysninger={kategori.saksopplysninger}
                     behandlingId={valgtBehandling.behandlingId}
