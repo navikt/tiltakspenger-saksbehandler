@@ -30,7 +30,7 @@ function renderAntallDagerSaksopplysningRad({
 
 const TiltaksdagerTabell = (props: TiltaksdagerTabellProps) => {
   const { antallDagerSaksopplysninger, periode } = props.tiltak;
-  const ref = useRef(null);
+  const ref = useRef<HTMLDialogElement>(null);
   return (
     <div className={styles.tiltaksdagerTabell__container}>
       <Table>
@@ -52,12 +52,12 @@ const TiltaksdagerTabell = (props: TiltaksdagerTabellProps) => {
         variant="secondary"
         type="button"
         size="small"
-        onClick={() => (ref as any).current?.showModal()}
+        onClick={() => ref.current?.showModal()}
       >
         Endre antall dager per uke
       </Button>
       <EndreAntallDagerModal
-        ref={ref}
+        modalRef={ref}
         minDate={dayjs(periode.fra).toDate()}
         maxDate={dayjs(periode.til).toDate()}
         tiltakId={props.tiltak.id}
