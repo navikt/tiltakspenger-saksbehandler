@@ -1,35 +1,39 @@
-import React, { forwardRef, useState } from 'react';
+import React, { RefObject, useState } from 'react';
 import {
   BodyLong,
   BodyShort,
   Button,
   HStack,
   Modal,
+  Select,
   VStack,
 } from '@navikt/ds-react';
-import { FormProvider, useForm } from 'react-hook-form';
+import {
+  Controller,
+  FieldErrors,
+  SubmitHandler,
+  useForm,
+} from 'react-hook-form';
 import { useSWRConfig } from 'swr';
 import { useRouter } from 'next/router';
-import Periodefelt from '../../saksopplysning-tabell/Periodefelt';
 import {
   gyldigPeriodeValidator,
   påkrevdPeriodeValidator,
+  setupValidation,
 } from '../../../utils/validation';
-import Flervalgsfelt from '../../flervalgsfelt/Flervalgsfelt';
 import { Stønadsdager } from '../../../types/Behandling';
+import Periodevelger from '../../saksopplysning-tabell/PeriodeVelger';
 
-interface SkjemaFelter {
-  periode: {
-    fom: Date;
-    tom: Date;
-  };
+interface Skjemafelter {
+  periode: { fra: string | undefined; til: string | undefined };
   antallDager: number;
 }
 
 interface EndreAntallDagerModalProps {
-  minDate: Date;
-  maxDate: Date;
+  minDate: string;
+  maxDate: string;
   tiltakId: string;
+  modalRef: RefObject<HTMLDialogElement>;
 }
 
 async function oppdaterAntallDager(
@@ -55,33 +59,37 @@ async function oppdaterAntallDager(
   return response;
 }
 
-const EndreAntallDagerModal = forwardRef<
-  HTMLDialogElement,
-  EndreAntallDagerModalProps
->(({ minDate, maxDate, tiltakId }, ref) => {
+const EndreAntallDagerModal = ({
+  minDate,
+  maxDate,
+  tiltakId,
+  modalRef,
+}: EndreAntallDagerModalProps) => {
   const [feilmelding, setFeilmelding] = useState(null);
   const router = useRouter();
-  const [unmountModal, setUnmountModal] = useState(false);
 
   const behandlingId = router.query.behandlingId as string;
   const mutator = useSWRConfig().mutate;
 
-  const formMethods = useForm<SkjemaFelter>({
-    mode: 'onSubmit',
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+    getValues,
+  } = useForm({
     defaultValues: {
-      periode: {
-        fom: null,
-        tom: null,
-      } as any,
+      periode: { fra: minDate, til: maxDate },
       antallDager: 0,
     },
   });
 
-  async function onSubmit() {
-    const data = formMethods.getValues();
-    const fra = data.periode.fom;
-    const til = data.periode.tom;
+  const onInvalid = (errors: FieldErrors) => console.error(errors);
 
+  console.log('verdier i modal: ', getValues());
+
+  const onSubmit: SubmitHandler<Skjemafelter> = (data) => {
+    console.log('sendt data: ', data);
+    /*
     try {
       setFeilmelding(null);
       formMethods.reset();
@@ -89,49 +97,78 @@ const EndreAntallDagerModal = forwardRef<
         {
           antallDager: data.antallDager,
           periode: {
-            fra,
-            til,
-          },
-          kilde: 'SAKSB',
-        },
-        behandlingId,
-        tiltakId,
-      );
-      (ref as any).current?.close();
-      setUnmountModal(true);
-      await mutator(`/api/behandling/${behandlingId}`);
-      setUnmountModal(false);
-    } catch (e: any) {
-      setFeilmelding(e.message);
-    }
-  }
+            fra: data.periode.fom,
+            til: data.periode.tom,
+            },
+            kilde: 'SAKSB',
+            },
+            behandlingId,
+            tiltakId,
+            );
+            (ref as any).current?.close();
+            await mutator(`/api/behandling/${behandlingId}`);
+            } catch (e: any) {
+              setFeilmelding(e.message);
+              }*/
+  };
 
   return (
-    <div className="py-16">
-      <FormProvider {...formMethods}>
-        <form onSubmit={formMethods.handleSubmit(onSubmit)}>
-          <Modal ref={ref} header={{ heading: 'Endre antall tiltaksdager' }}>
-            {!unmountModal && (
-              <Modal.Body>
-                <VStack gap="4">
-                  <BodyLong>
-                    Dagene du setter per uke blir gjeldende for perioden du
-                    setter. Gjenstår det perioder i vedtaket, får disse de
-                    gjenstående dagene hentet fra Arena.
-                  </BodyLong>
-                  <HStack gap="4">
-                    <Periodefelt
-                      name="periode"
-                      validate={[
-                        gyldigPeriodeValidator,
-                        påkrevdPeriodeValidator,
-                      ]}
-                      minDate={minDate}
-                      maxDate={maxDate}
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
+      <Modal ref={modalRef} header={{ heading: 'Endre antall tiltaksdager' }}>
+        <Modal.Body>
+          <VStack gap="4">
+            <BodyLong>
+              Dagene du setter per uke blir gjeldende for perioden du setter.
+              Gjenstår det perioder i vedtaket, får disse de gjenstående dagene
+              hentet fra Arena.
+            </BodyLong>
+            <HStack gap="4">
+              <Controller
+                name="periode"
+                control={control}
+                render={({ field: { onChange, value, ref } }) => {
+                  return (
+                    <Periodevelger
+                      onFraChange={(dato: Date | undefined) => {
+                        onChange({
+                          fra: dato || '',
+                          til: value.til,
+                        });
+                      }}
+                      onTilChange={(dato: Date | undefined) => {
+                        onChange(
+                          onChange({
+                            fra: value.fra,
+                            til: dato || '',
+                          }),
+                        );
+                      }}
+                      error={errors.antallDager}
+                      minDato={minDate}
+                      maxDato={maxDate}
+                      disabled={false}
+                      inputref={ref}
                     />
-                    <Flervalgsfelt
-                      label="Antall dager per uke"
-                      name="antallDager"
+                  );
+                }}
+              />
+              <Controller
+                name={'antallDager'}
+                control={control}
+                rules={{
+                  validate: setupValidation((valgtVerdi) => {
+                    if (!valgtVerdi) {
+                      return 'Det er påkrevd å oppgi antall dager i uken.';
+                    }
+                  }),
+                }}
+                render={({ field }) => {
+                  return (
+                    <Select
+                      label="Antall dager"
+                      size="small"
+                      error={!!errors.antallDager}
+                      {...field}
                     >
                       <option value=""></option>
                       <option value="1">1</option>
@@ -139,34 +176,31 @@ const EndreAntallDagerModal = forwardRef<
                       <option value="3">3</option>
                       <option value="4">4</option>
                       <option value="5">5</option>
-                    </Flervalgsfelt>
-                  </HStack>
-                </VStack>
-              </Modal.Body>
-            )}
-            <Modal.Footer>
-              <Button type="submit">Endre antall dager</Button>
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={() => {
-                  (ref as any).current?.close();
+                    </Select>
+                  );
                 }}
-              >
-                Avbryt
-              </Button>
-              {feilmelding && (
-                <BodyShort size={'small'}>{feilmelding}</BodyShort>
-              )}
-            </Modal.Footer>
-          </Modal>
-        </form>
-      </FormProvider>
-    </div>
+              />
+            </HStack>
+          </VStack>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button type="submit" value="submit">
+            Endre antall dager
+          </Button>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => {
+              modalRef.current?.close();
+            }}
+          >
+            Avbryt
+          </Button>
+          {feilmelding && <BodyShort size={'small'}>{feilmelding}</BodyShort>}
+        </Modal.Footer>
+      </Modal>
+    </form>
   );
-});
-
-// Fikser linting-feil pga. manglende displayName
-EndreAntallDagerModal.displayName = 'EndreAntallDagerModal';
+};
 
 export default EndreAntallDagerModal;
